@@ -53,6 +53,19 @@ function load_mailbox(mailbox) {
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+
+  //GET all of the currently logged in user's mail
+  //Need to change 'inbox' to be dynamic to inbox/sent/archived
+  fetch('/emails/inbox')
+  .then(response => response.json())
+  .then(emails => {
+      //Log emails to console
+      console.log(emails);
+  })
+
+  // Show the emails in the inbox
+  //forEach on each item returned from mailbox GET request
+  const mailItem = document.createElement('div');
 }
 
 
