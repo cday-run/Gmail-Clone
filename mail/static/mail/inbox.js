@@ -103,22 +103,46 @@ function load_mailbox(mailbox) {
       //forEach on each item returned from mailbox GET request
       for (email in emails) {
         JSON.parse(email);
+        //Create an archive email btn
+        const archiveBtn = document.createElement('button');
+        archiveBtn.id = "archiveBtn";
+
+        //Create a div for inbox email
         const mailItem = document.createElement('div');
         mailItem.id = "mailItem";
         email = emails[email];
+        emailId = parseInt(email.id);
+
         mailItem.innerHTML += "<h6>" + email.sender + "</h6>" +
         "<p>" + email.subject + "</p>" + "<small>" + 
         email.timestamp + "</small>";
-        mailItem.addEventListener('click', function() {
-          emailId = parseInt(email.id);
-          display_mail(emailId);
-        });
+        
+        //Append the archive btn
+        mailItem.appendChild(archiveBtn);
+
+        //Set bg colour depending on read status
         if (email.read === false) {
           mailItem.style.backgroundColor = "white";
         }
         else {
           mailItem.style.backgroundColor = "gray";
         }
+
+        //Add event listener to open clicked email
+        mailItem.addEventListener('click', function() {
+          display_mail(emailId);
+        });
+
+        //Add event listener to archive email when archiveBtn clicked
+        archiveBtn.addEventListener('click', function() {
+          fetch(`/emails/${emailId}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+              archived: !archived
+            })
+          })
+        })
+
         document.querySelector('#emails-view').append(mailItem);
       }       
   })
