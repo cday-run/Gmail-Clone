@@ -14,6 +14,7 @@ function compose_email() {
 
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#display-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
 
   // Clear out composition fields
@@ -45,35 +46,74 @@ function compose_email() {
 
 }
 
+//Add function to create div in inbox.html to display email clicked on
+function display_mail(emailId) {
+  //Show the email and hide other views
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#display-view').style.display = 'block';
+  document.querySelector('#compose-view').style.display = 'none';
+
+  //Clear the div view
+  document.querySelector('#display-view').innerHTML = '';
+  //Update email read status 
+  fetch(`/emails/${emailId}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          read: true
+        })
+      })
+  //Show the email
+  fetch(`/emails/${emailId}`)
+  .then(response => response.json())
+  .then(emails => {
+      const replyBtn = document.createElement('button');
+      replyBtn.id = replyBtn;
+      const mailDisplay = document.createElement('div');
+      mailDisplay.id = "mailDisplay";
+      mailDisplay.innerHTML += "<h4>" + emails.sender + "</h4>" +
+      "<small>" + emails.recipients + "</small>" + 
+      "<small>" + emails.timestamp + "</small>" +
+      "<h4>" + emails.subject + "</h4>" +
+      "<p>" + emails.body + "</p>";
+      mailDisplay.appendChild(replyBtn);
+      replyBtn.addEventListener('click', function() {
+        console.log('btn clicked');
+      })
+      document.querySelector('#display-view').append(mailDisplay);
+  })
+}
+
 function load_mailbox(mailbox) {
   
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
+  document.querySelector('#display-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'none';
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
 
   //GET all of the currently logged in user's mail
-  //Need to change 'inbox' to be dynamic to inbox/sent/archived
-  fetch('/emails/inbox')
+  fetch(`/emails/${mailbox}`)
   .then(response => response.json())
   .then(emails => {
       //Log emails to console
-      //console.log(emails);
+      console.log(emails);
       // Show the emails in the inbox
       //forEach on each item returned from mailbox GET request
       for (email in emails) {
         JSON.parse(email);
         const mailItem = document.createElement('div');
         mailItem.id = "mailItem";
-        mailItem.innerHTML += "<h6>" + emails[email].sender + "</h6>" +
-        "<p>" + emails[email].subject + "</p>" + "<small>" + 
-        emails[email].timestamp + "</small>";
+        email = emails[email];
+        mailItem.innerHTML += "<h6>" + email.sender + "</h6>" +
+        "<p>" + email.subject + "</p>" + "<small>" + 
+        email.timestamp + "</small>";
         mailItem.addEventListener('click', function() {
-          console.log('clicked')
+          emailId = parseInt(email.id);
+          display_mail(emailId);
         });
-        if (emails[email].read === false) {
+        if (email.read === false) {
           mailItem.style.backgroundColor = "white";
         }
         else {
