@@ -60,18 +60,26 @@ function load_mailbox(mailbox) {
   .then(response => response.json())
   .then(emails => {
       //Log emails to console
-      console.log(emails);
+      //console.log(emails);
+      // Show the emails in the inbox
+      //forEach on each item returned from mailbox GET request
+      for (email in emails) {
+        JSON.parse(email);
+        const mailItem = document.createElement('div');
+        mailItem.id = "mailItem";
+        mailItem.innerHTML += "<h6>" + emails[email].sender + "</h6>" +
+        "<p>" + emails[email].subject + "</p>" + "<small>" + 
+        emails[email].timestamp + "</small>";
+        mailItem.addEventListener('click', function() {
+          console.log('clicked')
+        });
+        if (emails[email].read === false) {
+          mailItem.style.backgroundColor = "white";
+        }
+        else {
+          mailItem.style.backgroundColor = "gray";
+        }
+        document.querySelector('#emails-view').append(mailItem);
+      }       
   })
-
-  // Show the emails in the inbox
-  //forEach on each item returned from mailbox GET request
-  const mailItem = document.createElement('div');
 }
-
-
-// const element = document.createElement('div');
-// element.innerHTML = 'This is the content of the div.';
-// element.addEventListener('click', function() {
-//     console.log('This element has been clicked!')
-// });
-// document.querySelector('#container').append(element);
