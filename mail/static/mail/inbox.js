@@ -67,7 +67,7 @@ function display_mail(emailId) {
   .then(response => response.json())
   .then(emails => {
       const replyBtn = document.createElement('button');
-      replyBtn.id = replyBtn;
+      replyBtn.id = "replyBtn";
       const mailDisplay = document.createElement('div');
       mailDisplay.id = "mailDisplay";
       mailDisplay.innerHTML += "<h4>" + emails.sender + "</h4>" +
@@ -77,9 +77,36 @@ function display_mail(emailId) {
       "<p>" + emails.body + "</p>";
       mailDisplay.appendChild(replyBtn);
       replyBtn.addEventListener('click', function() {
-        console.log('btn clicked');
-      })
-      document.querySelector('#display-view').append(mailDisplay);
+        //Show compose view and hide other views
+        document.querySelector('#emails-view').style.display = 'none';
+        document.querySelector('#display-view').style.display = 'none';
+        document.querySelector('#compose-view').style.display = 'block';
+
+        //Prefill composition form fields
+        document.querySelector('#compose-recipients').value = `${emails.sender}`;
+        document.querySelector('#compose-subject').value = `Re: ${emails.subject}`;
+        document.querySelector('#compose-body').value = `Date: ${emails.timestamp}` +
+        "<br>" + `${emails.sender} wrote:` + 
+        "<br>" + `${emails.body}`;
+
+        //Submit the email form
+        document.querySelector("#compose-form").onsubmit = () => {
+          const recipients = document.querySelector('#compose-recipients').value;
+          const subject = document.querySelector('#compose-subject').value;
+          const body = document.querySelector('#compose-body').value;
+
+          //Submit POST request to server
+          fetch('/emails', {
+            method: 'POST',
+            body: JSON.stringify({
+              recipients: recipients,
+              subject: subject,
+              body: body
+            })
+          })
+        }
+      })   
+    document.querySelector('#display-view').append(mailDisplay);
   })
 }
 
@@ -117,8 +144,10 @@ function load_mailbox(mailbox) {
         "<p>" + email.subject + "</p>" + "<small>" + 
         email.timestamp + "</small>";
         
-        //Append the archive btn
-        mailItem.appendChild(archiveBtn);
+        //Append the archive btn if not in Sent mailbox
+        if (`${mailbox}` != 'sent') {
+          mailItem.appendChild(archiveBtn);
+        }
 
         //Set bg colour depending on read status
         if (email.read === false) {
