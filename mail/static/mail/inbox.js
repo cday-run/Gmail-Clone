@@ -55,6 +55,7 @@ function display_mail(emailId) {
 
   //Clear the div view
   document.querySelector('#display-view').innerHTML = '';
+
   //Update email read status 
   fetch(`/emails/${emailId}`, {
         method: 'PUT',
@@ -62,19 +63,24 @@ function display_mail(emailId) {
           read: true
         })
       })
+
   //Show the email
   fetch(`/emails/${emailId}`)
   .then(response => response.json())
   .then(emails => {
+      //Create a reply btn
       const replyBtn = document.createElement('button');
-      replyBtn.id = "replyBtn";
+      replyBtn.className = "btn btn-primary";
+      replyBtn.textContent = "Reply";
+
       const mailDisplay = document.createElement('div');
       mailDisplay.id = "mailDisplay";
-      mailDisplay.innerHTML += "<h4>" + emails.sender + "</h4>" +
-      "<small>" + emails.recipients + "</small>" + 
-      "<small>" + emails.timestamp + "</small>" +
-      "<h4>" + emails.subject + "</h4>" +
+      mailDisplay.className = "border border-primary rounded";
+      mailDisplay.innerHTML += "<h3>" + `Subject: ${emails.subject}` + "</h3>" +
+      "<h5>" + `To: ${emails.recipients}` + "</h5>" + "<h5>" + `On: ${emails.timestamp}` + "</h5>" + 
+      "<h5>" + `From: ${emails.sender}` + "</h5>" + 
       "<p>" + emails.body + "</p>";
+
       mailDisplay.appendChild(replyBtn);
       replyBtn.addEventListener('click', function() {
         //Show compose view and hide other views
@@ -85,9 +91,7 @@ function display_mail(emailId) {
         //Prefill composition form fields
         document.querySelector('#compose-recipients').value = `${emails.sender}`;
         document.querySelector('#compose-subject').value = `Re: ${emails.subject}`;
-        document.querySelector('#compose-body').value = `Date: ${emails.timestamp}` +
-        "<br>" + `${emails.sender} wrote:` + 
-        "<br>" + `${emails.body}`;
+        document.querySelector('#compose-body').value = `Date: ${emails.timestamp} \n ${emails.sender} wrote: \n  ${emails.body} \n`;
 
         //Submit the email form
         document.querySelector("#compose-form").onsubmit = () => {
@@ -132,21 +136,25 @@ function load_mailbox(mailbox) {
         JSON.parse(email);
         //Create an archive email btn
         const archiveBtn = document.createElement('button');
+        const archiveEle = document.createElement('i');
         archiveBtn.id = "archiveBtn";
+        archiveBtn.className = "btn btn-default";
+        archiveEle.className = "fa fa-folder";
+        archiveBtn.append(archiveEle);
 
         //Create a div for inbox email
         const mailItem = document.createElement('div');
-        mailItem.id = "mailItem";
+        mailItem.className = "border rounded d-flex align-items-center justify-content-between";
         email = emails[email];
-        emailId = parseInt(email.id);
+        mailItem.id = email.id;
 
-        mailItem.innerHTML += "<h6>" + email.sender + "</h6>" +
-        "<p>" + email.subject + "</p>" + "<small>" + 
-        email.timestamp + "</small>";
+        mailItem.innerHTML += "<h5>" + email.subject + "</h5>" +
+        "<h6>" + email.sender + "</h6>" + "<h6>" + 
+        email.timestamp + "</h6>";
         
         //Append the archive btn if not in Sent mailbox
         if (`${mailbox}` != 'sent') {
-          mailItem.appendChild(archiveBtn);
+          mailItem.append(archiveBtn);
         }
 
         //Set bg colour depending on read status
@@ -154,22 +162,24 @@ function load_mailbox(mailbox) {
           mailItem.style.backgroundColor = "white";
         }
         else {
-          mailItem.style.backgroundColor = "gray";
+          mailItem.style.backgroundColor = "#DEDEDE";
         }
 
         //Add event listener to open clicked email
         mailItem.addEventListener('click', function() {
-          display_mail(emailId);
+          display_mail(mailItem.id);
         });
 
-        //Add event listener to archive email when archiveBtn clicked
+        // //Add event listener to archive email when archiveBtn clicked
         archiveBtn.addEventListener('click', function() {
-          fetch(`/emails/${emailId}`, {
+          archived = email.archived;
+          fetch(`/emails/${mailItem.id}`, {
             method: 'PUT',
             body: JSON.stringify({
               archived: !archived
             })
           })
+          load_mailbox('inbox')
         })
 
         document.querySelector('#emails-view').append(mailItem);

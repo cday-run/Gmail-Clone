@@ -1,3 +1,11 @@
 textarea {
     min-height: 400px;
 }
+
+.border {
+	padding: 5px;
+}
+
+#mailDisplay {
+	background-color: #DEDEDE;
+}
