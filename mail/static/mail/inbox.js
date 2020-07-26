@@ -145,6 +145,7 @@ function load_mailbox(mailbox) {
         //Create a div for inbox email
         const mailItem = document.createElement('div');
         mailItem.className = "border rounded d-flex align-items-center justify-content-between";
+        mailItem.style.display = "block";
         email = emails[email];
         mailItem.id = email.id;
 
@@ -165,25 +166,25 @@ function load_mailbox(mailbox) {
           mailItem.style.backgroundColor = "#DEDEDE";
         }
 
+        //Add element to view
+        document.querySelector('#emails-view').append(mailItem);
+
         //Add event listener to open clicked email
         mailItem.addEventListener('click', function() {
-          if (event.target !== archiveBtn){
+          if (event.target === archiveBtn || event.target === archiveEle){
+            archived = email.archived;
+            fetch(`/emails/${mailItem.id}`, {
+              method: 'PUT',
+              body: JSON.stringify({
+                archived: !archived
+              })
+            })
+            load_mailbox('inbox');
+          }
+          else{
             display_mail(mailItem.id);
           }
         });
-
-        // //Add event listener to archive email when archiveBtn clicked
-        archiveBtn.addEventListener('click', function() {
-          archived = email.archived;
-          fetch(`/emails/${mailItem.id}`, {
-            method: 'PUT',
-            body: JSON.stringify({
-              archived: !archived
-            })
-          })
-        })
-
-        document.querySelector('#emails-view').append(mailItem);
       }       
   })
 }
