@@ -167,7 +167,9 @@ function load_mailbox(mailbox) {
 
         //Add event listener to open clicked email
         mailItem.addEventListener('click', function() {
-          display_mail(mailItem.id);
+          if (event.target !== archiveBtn){
+            display_mail(mailItem.id);
+          }
         });
 
         // //Add event listener to archive email when archiveBtn clicked
@@ -179,7 +181,6 @@ function load_mailbox(mailbox) {
               archived: !archived
             })
           })
-          load_mailbox('inbox')
         })
 
         document.querySelector('#emails-view').append(mailItem);
