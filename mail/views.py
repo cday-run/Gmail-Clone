@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import User, Email
+from django.contrib import messages
 
 
 def index(request):
@@ -68,7 +69,6 @@ def compose(request):
         for recipient in recipients:
             email.recipients.add(recipient)
         email.save()
-
     return JsonResponse({"message": "Email sent successfully."}, status=201)
 
 

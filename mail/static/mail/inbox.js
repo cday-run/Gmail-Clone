@@ -10,6 +10,23 @@ document.addEventListener('DOMContentLoaded', function() {
   load_mailbox('inbox');
 });
 
+var message = "";
+
+function load_message(message){
+  //Render any messages as alert
+  if (message === "") {
+    document.querySelector('#messages-view').className = '';
+  } else {
+    document.querySelector('#messages-view').className = 'alert alert-primary';
+    document.querySelector('#messages-view').innerHTML = message;
+    setTimeout(function() {
+      document.querySelector('#messages-view').className = '';
+      document.querySelector('#messages-view').innerHTML = '';
+    }, 2000);
+  }
+}
+
+
 function compose_email() {
 
   // Show compose view and hide other views
@@ -41,9 +58,13 @@ function compose_email() {
     .then(response => response.json())
     .then(result => {
       console.log(result);
+      if (result.error) {
+        alert(`${result.error}`);
+      } else {
+        alert("Email Sent!");
+      } 
     });
   }
-
 }
 
 //Add function to create div in inbox.html to display email clicked on
@@ -82,6 +103,7 @@ function display_mail(emailId) {
       "<p>" + emails.body + "</p>";
 
       mailDisplay.appendChild(replyBtn);
+      document.querySelector('#display-view').append(mailDisplay);
       replyBtn.addEventListener('click', function() {
         //Show compose view and hide other views
         document.querySelector('#emails-view').style.display = 'none';
@@ -108,13 +130,16 @@ function display_mail(emailId) {
               body: body
             })
           })
+        alert("Message Sent!");
         }
-      })   
-    document.querySelector('#display-view').append(mailDisplay);
+      }) 
   })
 }
 
 function load_mailbox(mailbox) {
+
+  load_message(message);
+  message = "";
   
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
@@ -128,8 +153,6 @@ function load_mailbox(mailbox) {
   fetch(`/emails/${mailbox}`)
   .then(response => response.json())
   .then(emails => {
-      //Log emails to console
-      console.log(emails);
       // Show the emails in the inbox
       //forEach on each item returned from mailbox GET request
       for (email in emails) {
@@ -179,6 +202,12 @@ function load_mailbox(mailbox) {
                 archived: !archived
               })
             })
+            if (`${mailbox}` === 'inbox'){
+              message = "Email archived!";
+            }
+            else {
+              message = "Email moved to Inbox!";
+            }
             load_mailbox('inbox');
           }
           else{
